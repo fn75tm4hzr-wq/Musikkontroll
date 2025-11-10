@@ -408,4 +408,105 @@
           const tdK=document.createElement('td'); tdK.contentEditable='true'; tdK.textContent=it.Kommentar||''; 
           tdK.addEventListener('blur', async ()=>{
             try{
-              const { data:list } = await supa.from('lists').select('*').
+              const { data:list } = await supa.from('lists').select('*').eq('id', L.id).single();
+              list.items[i].Kommentar = tdK.innerText;
+              await supa.from('lists').update({ items:list.items }).eq('id', L.id);
+            }catch(e){ console.error(e); }
+          });
+          tr.appendChild(tdK);
+
+          // Handlinger
+          const tdAct=document.createElement('td');
+          const del=document.createElement('button'); del.className='mini danger'; del.textContent='−';
+          del.title='Slett rad';
+          del.addEventListener('click', async ()=>{
+            try{
+              const { data:list } = await supa.from('lists').select('*').eq('id', L.id).single();
+              list.items.splice(i,1);
+              await supa.from('lists').update({ items:list.items }).eq('id', L.id);
+              renderDashboard();
+            }catch(e){ console.error(e); }
+          });
+          tdAct.appendChild(del);
+          tr.appendChild(tdAct);
+
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    // === Arkiv ===
+    async function renderArchive(){
+      const rows = await fetchControls();
+      const div=$$('#archive'); div.innerHTML='';
+      const byMonth={};
+      rows.forEach(c=>{
+        const key=new Date(c.created_at).toLocaleDateString('nb-NO',{year:'numeric',month:'long'});
+        (byMonth[key]=byMonth[key]||[]).push(c);
+      });
+      Object.keys(byMonth).sort().reverse().forEach(m=>{
+        const head=document.createElement('div'); head.className='card'; head.innerHTML='<b>'+sanitize(m)+'</b>'; div.appendChild(head);
+        byMonth[m].forEach(c=>{
+          const data=c.data||{};
+          const item=document.createElement('div'); item.className='card';
+          item.innerHTML='<b>'+sanitize(data.navn||'')+'</b> – '+new Date(c.created_at).toLocaleDateString('nb-NO')+'<br>'+
+            (data.tariff||[]).map(t=>sanitize((t.kvm||'')+' kvm • '+(t.seter||'')+' seter • '+(t.dager||'')+' dager • '+(t.type||''))).join('<br>');
+          div.appendChild(item);
+        });
+      });
+    }
+
+    // === Events ===
+    $$$('nav button').forEach(b=> b.addEventListener('click', ()=>show(b.dataset.page)));
+    window.addEventListener('resize', applyNavPad, {passive:true});
+    window.addEventListener('orientationchange', applyNavPad, {passive:true});
+    applyNavPad();
+
+    $$('#brregBtn').addEventListener('click', searchBrreg);
+    $$('#orgnr').addEventListener('input', ()=>{ const n=$$('#orgnr').value.replace(/\D/g,''); if(n.length===9) searchBrregDebounced(); });
+    $$('#type').addEventListener('change', updateTariffDefault);
+    $$('#addRowBtn').addEventListener('click', ()=>addRow());
+    $$('#resetBtn').addEventListener('click', resetForm);
+    $$('#saveDraftBtn').addEventListener('click', ()=>saveControl('draft'));
+    $$('#sendBtn').addEventListener('click', ()=>saveControl('sent'));
+    $$('#printBtn').addEventListener('click', printReceipt);
+    $$('#excelFile').addEventListener('change', importExcel);
+    $$('#logoutBtn').addEventListener('click', signOut);
+    $$('#search').addEventListener('input', debounce(renderDashboard, 200));
+
+    $$('#loginBtn').addEventListener('click', async ()=>{
+      clearAuthError(); setAuthBusy(true); setAuthStatus('Logger inn…');
+      try{
+        await loginEmailPass(($$('#email').value||'').trim(), ($$('#password').value||'').trim());
+        setAuthStatus('Innlogget ✔'); toast('Innlogget'); show('kontroll');
+        renderDashboard(); renderArchive(); updateTariffDefault();
+      }catch(err){
+        console.error(err);
+        const msg = err?.message || String(err); showAuthError(msg);
+        setAuthStatus(msg.includes('Email not confirmed') ? 'E-post ikke bekreftet i Supabase.' : 'Innlogging feilet.');
+      }finally{ setAuthBusy(false); }
+    });
+    $$('#signupBtn').addEventListener('click', async ()=>{
+      clearAuthError(); setAuthBusy(true); setAuthStatus('Oppretter bruker…');
+      try{ await signupEmailPass(($$('#email').value||'').trim(), ($$('#password').value||'').trim()); setAuthStatus('Bruker opprettet. Sjekk ev. e-postbekreftelse.'); toast('Bruker opprettet'); }
+      catch(err){ showAuthError(err?.message||String(err)); }
+      finally{ setAuthBusy(false); }
+    });
+    $$('#magicBtn').addEventListener('click', async ()=>{
+      clearAuthError(); setAuthBusy(true); setAuthStatus('Sender magisk lenke…');
+      try{ await magicLink(($$('#email').value||'').trim()); setAuthStatus('Magisk lenke sendt.'); toast('Sjekk e-posten'); }
+      catch(err){ showAuthError(err?.message||String(err)); }
+      finally{ setAuthBusy(false); }
+    });
+    ['#email','#password'].forEach(sel=> $$(sel).addEventListener('keydown', (ev)=>{ if(ev.key==='Enter') $$('#loginBtn').click(); }));
+
+    supa.auth.onAuthStateChange((_e, session)=>{ if(session?.user){ show('kontroll'); renderDashboard(); renderArchive(); updateTariffDefault(); } else { show('login'); } });
+    (async function init(){
+      const { data:{ session } } = await supa.auth.getSession();
+      if(session?.user){ show('kontroll'); renderDashboard(); renderArchive(); updateTariffDefault(); }
+      else { show('login'); updateTariffDefault(); }
+    })();
+  })();
+  </script>
+</body>
+</html>
