@@ -7,21 +7,23 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <style>
-    :root{ --bg:#f8fafc; --ink:#0f172a; --muted:#334155; --card:#fff; --br:#e2e8f0; --ok:#10b981; --warn:#f59e0b; --dark:#0f172a; --hint:#f1f5f9; }
+    :root{
+      --bg:#f8fafc;--ink:#0f172a;--muted:#334155;--card:#fff;--br:#e2e8f0;--ok:#10b981;--warn:#f59e0b;--dark:#0f172a;--hint:#f1f5f9;
+      --list-zoom: 1;
+    }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{font:16px -apple-system, system-ui, Segoe UI, Roboto, sans-serif; margin:0; background:var(--bg); color:var(--ink); padding-bottom:var(--navpad, calc(140px + env(safe-area-inset-bottom))); }
-    header{position:sticky;top:0;z-index:20;background:var(--dark);color:#fff;padding:12px env(safe-area-inset-left) 12px env(safe-area-inset-right);text-align:center;font-size:20px;font-weight:700}
+    body{font:16px -apple-system, system-ui, Segoe UI, Roboto, sans-serif; margin:0; background:var(--bg); color:var(--ink); padding-bottom:calc(120px + env(safe-area-inset-bottom));}
+    header{position:sticky;top:0;z-index:20;background:var(--dark);color:#fff;padding:12px env(safe-area-inset-left) 12px; text-align:center;font-size:20px;font-weight:700}
     nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid var(--br);display:flex;z-index:30;padding-bottom:env(safe-area-inset-bottom)}
-    nav button{flex:1;padding:16px;background:none;font-weight:600;color:var(--ink);border:none;font-size:16px;cursor:pointer}
+    nav button{flex:1;padding:14px 10px;background:none;font-weight:600;color:var(--ink);border:none;font-size:16px}
     nav button.active{background:var(--dark);color:#fff}
-    .page{display:none;padding:12px;max-width:760px;margin:auto}
+
+    .page{display:none;max-width:760px;margin:auto;padding:10px}
     .page.active{display:block}
-    .page::after{content:"";display:block;height:calc(var(--navpad, 140px) + 12px)}
     .card{background:var(--card);padding:10px;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.08);margin:8px 0}
     label{font-weight:600;color:var(--muted);margin:4px 0 6px;display:block;font-size:14px}
     input,select,textarea{width:100%;padding:10px;border:2px solid var(--br);border-radius:10px;font-size:16px}
-    input[type="number"]{appearance:textfield}
     .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0}
     .row>*{flex:1;min-width:120px}
     .row .icon-btn{width:36px;height:36px;font-size:18px;background:var(--hint);color:var(--ink);border:none;border-radius:8px;flex:0 0 auto;cursor:pointer}
@@ -30,27 +32,33 @@
     .btn-amber{background:var(--warn)}
     .btn-gray{background:#6b7280}
     .help{font-size:13px;color:#475569}
-    .muted{color:#64748b}
     .log{font-size:13px;color:var(--ok);background:#f0fdf4;padding:8px;border-radius:8px;margin-top:6px}
-    .list-header{font-weight:600;display:flex;gap:8px;justify-content:space-between;align-items:center;margin-bottom:8px}
-    .list-table{width:100%;border-collapse:collapse;margin-top:8px}
-    .list-table th{position:sticky;top:0;background:var(--hint);padding:8px;text-align:left;font-weight:700;font-size:14px}
-    .list-table td{padding:8px;vertical-align:top;border-bottom:1px solid var(--br)}
+    .hidden{display:none}
+
+    /* Lister – mer kompakt */
+    #lister .card.compact{padding:8px}
+    #lister .compact input{padding:8px}
+    .list-wrap{transform-origin: top left; scale: var(--list-zoom)}
+    .list-table{width:100%;border-collapse:collapse}
+    .list-table th{position:sticky;top:0;background:var(--hint);padding:6px 8px;text-align:left;font-weight:700;font-size:14px}
+    .list-table td{padding:6px 8px;vertical-align:top;border-bottom:1px solid var(--br)}
+    .list-row{background:#fff}
     .list-row:hover{background:#f9fafb}
-    .name-btn{all:unset;color:#0f172a;font-weight:800;cursor:pointer}
-    .mini{width:auto;min-width:36px;height:36px;padding:0 8px;font-size:14px}
-    .danger{background:#ef4444}
+    .list-header{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+    .zoom-btns{display:flex;gap:6px}
+    .zoom-btns button{width:auto;padding:6px 10px;font-size:14px}
+
+    /* Toast */
     #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(70px + env(safe-area-inset-bottom));background:#111827;color:#fff;padding:10px 14px;border-radius:10px;box-shadow:0 6px 30px rgba(0,0,0,.25);opacity:0;transition:opacity .25s}
     #toast.show{opacity:1}
-    .center{max-width:420px;margin:40px auto}
   </style>
 </head>
 <body>
-  <header aria-live="polite">🎵 Musikkontroll v1.8.4</header>
+  <header aria-live="polite">🎵 Musikkontroll v1.8.5</header>
 
   <!-- LOGIN -->
-  <main id="login" class="page active center" role="main" aria-labelledby="login-title">
-    <h1 id="login-title">Logg inn</h1>
+  <main id="login" class="page active" style="max-width:420px">
+    <h1>Logg inn</h1>
     <div class="card">
       <label for="email">E-post</label>
       <input id="email" type="email" autocomplete="username" />
@@ -60,33 +68,28 @@
         <button id="loginBtn">Logg inn</button>
         <button class="btn-green" id="signupBtn">Opprett bruker</button>
       </div>
-      <div class="row">
-        <button class="btn-gray" id="magicBtn">Send magisk lenke</button>
-      </div>
-      <div id="auth-status" class="help muted" aria-live="polite"></div>
+      <div class="row"><button class="btn-gray" id="magicBtn">Send magisk lenke</button></div>
       <div id="auth-error" class="log" style="background:#fef2f2;color:#991b1b;display:none"></div>
     </div>
   </main>
 
   <!-- SKJEMA -->
-  <div id="kontroll" class="page" aria-labelledby="kontroll-title">
-    <h2 id="kontroll-title" class="visually-hidden">Kontrollskjema</h2>
-    <div class="card" aria-describedby="brreg-hjelp">
+  <div id="kontroll" class="page">
+    <div class="card">
       <label for="orgnr">Org.nr</label>
       <div class="row">
-        <input id="orgnr" inputmode="numeric" pattern="\d{9}" maxlength="9" placeholder="9 siffer" aria-describedby="brreg-hjelp" />
-        <button type="button" class="icon-btn" id="brregBtn" title="Søk i Enhetsregisteret">🔎</button>
+        <input id="orgnr" inputmode="numeric" maxlength="9" placeholder="9 siffer" />
+        <button class="icon-btn" id="brregBtn" title="Søk i Enhetsregisteret">🔎</button>
       </div>
-      <div id="brreg-hjelp" class="help">Søk henter navn og postadresse fra Brreg.</div>
       <div class="row">
-        <button type="button" class="btn-gray" id="resetBtn">🗑 Nullstill skjema</button>
-        <button type="button" class="btn-gray" id="logoutBtn">Logg ut</button>
+        <button class="btn-gray" id="resetBtn">🗑 Nullstill</button>
+        <button class="btn-gray" id="logoutBtn">Logg ut</button>
       </div>
-      <div class="log" id="brreg-log" aria-live="polite"></div>
+      <div id="brreg-log" class="log" aria-live="polite"></div>
     </div>
 
-    <div class="card"><label for="navn">Besøksnavn</label><input id="navn" autocomplete="organization" /></div>
-    <div class="card"><label for="besoksadresse">Adresse (besøk)</label><input id="besoksadresse" autocomplete="address-line1" /></div>
+    <div class="card"><label for="navn">Besøksnavn</label><input id="navn" /></div>
+    <div class="card"><label for="besoksadresse">Adresse (besøk)</label><input id="besoksadresse" /></div>
     <div class="card">
       <label>Post (besøk)</label>
       <div class="row"><input id="besoks_postnr" inputmode="numeric" maxlength="4" placeholder="Postnr"><input id="besoks_poststed" placeholder="Poststed"></div>
@@ -94,48 +97,65 @@
     <div class="card"><label for="firma">Firmanavn</label><input id="firma" /></div>
     <div class="card">
       <label>Firmaadresse (post)</label>
-      <div class="row"><input id="firma_postadresse" placeholder="Gateadresse"><input id="firma_postnr" inputmode="numeric" maxlength="4" placeholder="Postnr"><input id="firma_poststed" placeholder="Poststed"></div>
+      <div class="row">
+        <input id="firma_postadresse" placeholder="Gateadresse">
+        <input id="firma_postnr" inputmode="numeric" maxlength="4" placeholder="Postnr">
+        <input id="firma_poststed" placeholder="Poststed">
+      </div>
     </div>
-    <div class="card"><label for="type">Type</label><select id="type"><option>Serveringssted</option><option>Kundelokale</option></select></div>
 
     <div class="card">
       <strong>Størrelse</strong>
       <div id="tariff-rows"></div>
-      <button type="button" class="btn-green" id="addRowBtn">+ Ny linje</button>
+      <button class="btn-green" id="addRowBtn">+ Ny linje</button>
+
       <label for="hoyttalere">Høyttalere</label><input id="hoyttalere">
       <label for="kommentar">Kommentar</label><textarea id="kommentar" rows="2"></textarea>
       <div class="row">
-        <button type="button" id="saveDraftBtn">Lagre</button>
-        <button type="button" class="btn-amber" id="printBtn">Print</button>
-        <button type="button" class="btn-green" id="sendBtn">Send PDF</button>
+        <button id="saveDraftBtn">Lagre</button>
+        <button class="btn-amber" id="printBtn">Print</button>
+        <button class="btn-green" id="sendBtn">Send PDF</button>
       </div>
     </div>
   </div>
 
   <!-- LISTER -->
-  <div id="lister" class="page" aria-labelledby="lister-title">
-    <h2 id="lister-title" class="visually-hidden">Lister</h2>
-    <div class="card">
-      <input type="file" id="excelFile" accept=".xlsx" />
-      <div class="help">Importer Excel (kolonner: Kommentar, Orgnummer, Navn, Gateadresse, Postnr, Poststed)</div>
+  <div id="lister" class="page">
+    <div class="card compact">
+      <div class="list-header">
+        <div style="flex:1;min-width:160px">
+          <input type="file" id="excelFile" accept=".xlsx" />
+          <div class="help">Importer Excel (Kommentar, Orgnummer, Navn, Gateadresse, Postnr, Poststed)</div>
+        </div>
+        <div class="zoom-btns">
+          <button class="btn-gray" id="zoomOut">A−</button>
+          <button class="btn-gray" id="zoomReset">100%</button>
+          <button class="btn-gray" id="zoomIn">A+</button>
+        </div>
+      </div>
+      <div class="row compact">
+        <input id="search" placeholder="Filtrer i aktive lister" />
+      </div>
     </div>
-    <div class="card">
-      <label for="search">Søk</label>
-      <input id="search" placeholder="Filtrer i aktive lister" />
+
+    <div class="list-wrap">
+      <div id="lists-dashboard"></div>
     </div>
-    <div id="lists-dashboard"></div>
   </div>
 
   <!-- KONTROLLERT -->
-  <div id="kontrollert" class="page" aria-labelledby="kontrollert-title">
-    <h2 id="kontrollert-title" class="visually-hidden">Kontrollert</h2>
+  <div id="kontrollert" class="page">
+    <div class="row" style="gap:8px">
+      <button class="btn-amber" id="exportMonthBtn">Eksporter (denne måneden)</button>
+      <button class="btn-gray" id="refreshArchiveBtn">Oppdater</button>
+    </div>
     <div id="archive"></div>
   </div>
 
   <nav aria-label="Hovednavigasjon">
-    <button type="button" data-page="kontroll" class="active">Skjema</button>
-    <button type="button" data-page="lister">Lister</button>
-    <button type="button" data-page="kontrollert">Kontrollert</button>
+    <button data-page="kontroll" class="active">Skjema</button>
+    <button data-page="lister">Lister</button>
+    <button data-page="kontrollert">Kontrollert</button>
   </nav>
 
   <div id="toast" role="status" aria-live="polite"></div>
@@ -147,96 +167,82 @@
 
   <script>
   (function(){
-    if (!window.supabase || !window.supabase.createClient) {
-      alert('Fikk ikke lastet Supabase-biblioteket. Skru av “shields”/adblock eller sjekk nettverket.');
-      return;
-    }
     const { createClient } = window.supabase;
-
-    // === Supabase prosjekt ===
     const SUPABASE_URL = 'https://lztitjaumvqgycpcvvwl.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6dGl0amF1bXZxZ3ljcGN2dndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyNjQ2NTEsImV4cCI6MjA3Nzg0MDY1MX0.ZDK2ymr5vYG3HP5-j-CRv3UAe5G-VKGIUOObbhd6cyU';
     const supa = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // === utils ===
-    const $$ = s => document.querySelector(s);
-    const $$$ = s => Array.from(document.querySelectorAll(s));
-    const toast = (m)=>{ const t=$$('#toast'); if(!t) return; t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1600); };
-    const sanitize = (str='') => String(str).replace(/[<>]/g, c => ({'<':'&lt;','>':'&gt;'}[c]));
-    const debounce=(fn,ms=400)=>{ let h; return (...a)=>{ clearTimeout(h); h=setTimeout(()=>fn(...a),ms); }; };
-    function applyNavPad(){ const h=(document.querySelector('nav')?.offsetHeight)||120; document.documentElement.style.setProperty('--navpad', (h+32)+'px'); }
-    function show(page){ $$$('.page').forEach(p=>p.classList.remove('active')); $$('#'+page).classList.add('active'); $$$('nav button').forEach(b=>b.classList.toggle('active', b.dataset.page===page)); window.scrollTo({top:0,behavior:'instant'}); }
+    const $$ = (s)=>document.querySelector(s);
+    const $$$ = (s)=>Array.from(document.querySelectorAll(s));
+    const toast = (m)=>{ const t=$$('#toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 1400); };
+    const sanitize = (str='')=>String(str).replace(/[<>]/g,c=>({'<':'&lt;','>':'&gt;'}[c]));
+    const debounce=(fn,ms=350)=>{ let h; return (...a)=>{ clearTimeout(h); h=setTimeout(()=>fn(...a),ms);} };
 
-    // === Auth ===
+    function show(page){ $$$('.page').forEach(x=>x.classList.remove('active')); $$('#'+page).classList.add('active'); $$$('nav button').forEach(b=>b.classList.toggle('active', b.dataset.page===page)); }
+
     async function currentUser(){ const { data:{ user } } = await supa.auth.getUser(); return user; }
-    async function loginEmailPass(email, password){ const { error } = await supa.auth.signInWithPassword({ email, password }); if(error) throw error; }
-    async function signupEmailPass(email, password){ const { error } = await supa.auth.signUp({ email, password }); if(error) throw error; }
-    async function magicLink(email){ const { error } = await supa.auth.signInWithOtp({ email }); if(error) throw error; }
     async function signOut(){ await supa.auth.signOut(); toast('Logget ut'); show('login'); }
 
-    function setAuthBusy(busy){ ['loginBtn','signupBtn','magicBtn'].forEach(id=>{ const el=$$('#'+id); if(!el) return; el.disabled=busy; el.style.opacity=busy?0.6:1; }); }
-    function showAuthError(msg){ const box=$$('#auth-error'); if(!box) return; box.style.display='block'; box.textContent=msg||'Ukjent feil'; }
-    function clearAuthError(){ const box=$$('#auth-error'); if(!box) return; box.style.display='none'; box.textContent=''; }
-    function setAuthStatus(s){ const el=$$('#auth-status'); if(el) el.textContent=s||''; }
-
-    // === Brreg ===
+    // ====== Brreg ======
     const brregLog = $$('#brreg-log');
     async function searchBrreg(){
-      const n=($$('#orgnr').value||'').replace(/\D/g,'');
-      if(n.length!==9){ if(brregLog) brregLog.textContent='Org.nr må ha 9 siffer'; return; }
-      if(brregLog) brregLog.textContent='Søker…';
+      const n=$$('#orgnr').value.replace(/\D/g,'');
+      if(n.length!==9){ brregLog.textContent='Org.nr må ha 9 siffer'; return; }
+      brregLog.textContent='Søker…';
       try{
         const r=await fetch('https://data.brreg.no/enhetsregisteret/api/enheter/'+n);
-        if(!r.ok) throw new Error('Ikke funnet');
+        if(!r.ok) throw new Error();
         const d=await r.json();
         const a=d.forretningsadresse||d.beliggenhetsadresse||{};
         $$('#firma').value=d.navn||'';
         $$('#firma_postadresse').value=(a.adresse||a.adressebeskrivelse||a.gate||'')||'';
         $$('#firma_postnr').value=a.postnummer||'';
         $$('#firma_poststed').value=a.poststed||'';
-        if(brregLog) brregLog.textContent='Firmaadresse hentet';
-      }catch(e){ if(brregLog) brregLog.textContent='Ikke funnet'; }
+        brregLog.textContent='Firmaadresse hentet';
+      }catch(e){ brregLog.textContent='Ikke funnet'; }
     }
     const searchBrregDebounced = debounce(searchBrreg, 350);
 
-    // === Tarifflinjer ===
-    function rowEl(preset={}){
-      const isServ = $$('#type').value==='Serveringssted';
-      const wrap=document.createElement('div'); wrap.className='row tariff-row';
-      wrap.innerHTML = `
-        <input class="t-kvm" type="number" placeholder="Størrelse (kvm)" value="${sanitize(preset.kvm||'')}">
-        ${isServ?`<input class="t-seter" type="number" placeholder="Sitteplasser" value="${sanitize(preset.seter||'')}">`:''}
-        <input class="t-dager" type="number" placeholder="Dager pr. uke" value="${sanitize(preset.dager||'6')}">
-        <select class="t-type">
-          <option ${preset.type==='Bakgrunn'?'selected':''}>Bakgrunn</option>
-          <option ${preset.type==='Fremtredende'?'selected':''}>Fremtredende</option>
-        </select>
-        <button type="button" class="icon-btn rm">−</button>`;
-      wrap.querySelector('.rm').addEventListener('click', ()=>wrap.remove());
-      return wrap;
+    // ====== Tariff-rader (per linje: type + arena + dager pr år) ======
+    function defaultDays(kind){ // kind: 'Serveringssted' | 'Kundelokale' | 'Fremtredende'
+      if(kind==='Fremtredende') return 104;
+      if(kind==='Kundelokale') return 310;
+      return 356; // Serveringssted
     }
-    function updateTariffDefault(){ const host=$$('#tariff-rows'); host.innerHTML=''; host.appendChild(rowEl()); }
-    function addRow(p){ $$('#tariff-rows').appendChild(rowEl(p||{})); }
+    function rowTemplate(preset){
+      const musType = preset?.musType || 'Bakgrunn';           // Bakgrunn | Fremtredende
+      const arena   = preset?.arena   || 'Serveringssted';     // Serveringssted | Kundelokale
+      const kvm     = preset?.kvm     || '';
+      const seter   = preset?.seter   || '';
+      const dager   = preset?.dager   ?? defaultDays(musType==='Fremtredende' ? 'Fremtredende' : arena);
 
-    function resetForm(){
-      ['orgnr','navn','besoksadresse','besoks_postnr','besoks_poststed',
-       'firma','firma_postadresse','firma_postnr','firma_poststed','hoyttalere','kommentar']
-       .forEach(id=> $$('#'+id).value='');
-      $$('#type').value='Serveringssted';
-      updateTariffDefault();
-      if(brregLog) brregLog.textContent='';
-      toast('Skjema nullstilt');
+      return `<div class="row tariff-row">
+        <select class="sel-mus">
+          <option ${musType==='Bakgrunn'?'selected':''}>Bakgrunn</option>
+          <option ${musType==='Fremtredende'?'selected':''}>Fremtredende</option>
+        </select>
+        <select class="sel-arena">
+          <option ${arena==='Serveringssted'?'selected':''}>Serveringssted</option>
+          <option ${arena==='Kundelokale'?'selected':''}>Kundelokale</option>
+        </select>
+        <input class="in-kvm" type="number" placeholder="Størrelse (kvm)" value="${sanitize(kvm)}">
+        <input class="in-seter" type="number" placeholder="Sitteplasser" value="${sanitize(seter)}">
+        <input class="in-dager" type="number" placeholder="Dager pr. år" value="${sanitize(dager)}">
+        <button class="icon-btn" title="Fjern" onclick="this.closest('.tariff-row').remove()">−</button>
+      </div>`;
     }
+    function addRow(preset){ $$('#tariff-rows').insertAdjacentHTML('beforeend', rowTemplate(preset)); }
+    function updateTariffDefault(){ $$('#tariff-rows').innerHTML=''; addRow({}); }
 
     function getFormData(){
       const rows=[];
       $$('#tariff-rows').querySelectorAll('.tariff-row').forEach(r=>{
-        const isServ=$$('#type').value==='Serveringssted';
-        const kvm=r.querySelector('.t-kvm')?.value||'';
-        const seter=isServ?(r.querySelector('.t-seter')?.value||''):'';
-        const dager=r.querySelector('.t-dager')?.value||'';
-        const type=r.querySelector('.t-type')?.value||'Bakgrunn';
-        rows.push({kvm,seter,dager,type});
+        const musType=r.querySelector('.sel-mus').value;           // Bakgrunn/Fremtredende
+        const arena  =r.querySelector('.sel-arena').value;         // Serveringssted/Kundelokale
+        const kvm    =r.querySelector('.in-kvm').value;
+        const seter  =r.querySelector('.in-seter').value;
+        const dager  =r.querySelector('.in-dager').value || defaultDays(musType==='Fremtredende'?'Fremtredende':arena);
+        rows.push({ type:musType, arena, kvm, seter, dager });
       });
       return {
         orgnr: $$('#orgnr').value,
@@ -245,266 +251,284 @@
         postnr: $$('#besoks_postnr').value,
         poststed: $$('#besoks_poststed').value,
         firma: $$('#firma').value,
-        firma_postadresse: $$('#firma_postadresse')?.value||'',
-        firma_postnr: $$('#firma_postnr')?.value||'',
-        firma_poststed: $$('#firma_poststed')?.value||'',
-        type: $$('#type').value,
+        firma_postadresse: $$('#firma_postadresse').value,
+        firma_postnr: $$('#firma_postnr').value,
+        firma_poststed: $$('#firma_poststed').value,
         tariff: rows,
         hoyttalere: $$('#hoyttalere').value,
         kommentar: $$('#kommentar').value,
         dato: new Date().toISOString()
       };
     }
+    function resetForm(){
+      ['orgnr','navn','besoksadresse','besoks_postnr','besoks_poststed','firma','firma_postadresse','firma_postnr','firma_poststed','hoyttalere','kommentar'].forEach(id=> $$('#'+id).value='');
+      $$('#tariff-rows').innerHTML=''; addRow({}); brregLog.textContent='';
+      toast('Skjema nullstilt');
+    }
 
-    // === Supabase data ===
+    // ====== Supabase data ======
     async function saveControl(status){
       const user = await currentUser(); if(!user){ toast('Innlogging kreves'); return; }
       const payload=getFormData();
-      const { error } = await supa.from('controls').insert({
-        user_id:user.id, orgnr: payload.orgnr||null, data: payload, status
-      });
+      const { error } = await supa.from('controls').insert({ user_id:user.id, orgnr: payload.orgnr||null, data: payload, status });
       if(error){ console.error(error); toast('Kunne ikke lagre'); return; }
       toast(status==='sent'?'Sendt':'Lagret');
-      if(status==='sent'){ generatePDF(payload); await renderArchive(); }
+      if(status==='sent'){ await generatePDF(payload); await renderArchive(); }
     }
-    async function fetchControls(){ const { data, error } = await supa.from('controls').select('*').order('created_at',{ascending:false}); if(error){ console.error(error); return []; } return data; }
-
+    async function fetchControls(){ const { data } = await supa.from('controls').select('*').order('created_at',{ascending:false}); return data||[]; }
+    async function fetchLists(){ const { data } = await supa.from('lists').select('*').order('created_at',{ascending:false}); return data||[]; }
     async function saveList(name, items){
-      const user = await currentUser(); if(!user){ toast('Innlogging kreves'); return; }
+      const user=await currentUser(); if(!user){ toast('Innlogging kreves'); return; }
       const { error } = await supa.from('lists').insert({ user_id:user.id, name, items });
       if(error){ console.error(error); toast('Kunne ikke lagre liste'); return; }
-      toast('Liste importert'); await renderDashboard();
+      await renderDashboard(); toast('Liste importert');
     }
-    async function fetchLists(){ const { data, error } = await supa.from('lists').select('*').order('created_at',{ascending:false}); if(error){ console.error(error); return []; } return data; }
 
-    // === PDF ===
-    function generatePDF(data){
-      const { jsPDF } = window.jspdf || {};
-      if(!jsPDF){ alert('PDF-bibliotek mangler'); return; }
-      const doc=new jsPDF({ unit:'mm', format:[72,200] });
-      let y=8;
-      doc.setFontSize(12); doc.text('Kontrollskjema for bruk av musikk', 4, y); y+=6;
-      doc.setFontSize(9);
-      doc.text('Besøksnavn: '+(data.navn||''), 4, y); y+=5;
-      doc.text('Besøksadresse: '+(data.adresse||''), 4, y); y+=5;
-      doc.text('Post: '+(data.postnr||'')+' '+(data.poststed||''), 4, y); y+=5;
-      const dt = new Date(); doc.text('Kontrollert: '+dt.toLocaleDateString('nb-NO')+' kl '+dt.toLocaleTimeString('nb-NO',{hour:'2-digit',minute:'2-digit'}), 4, y); y+=5;
-      doc.text('Plassering av høyttalere: '+(data.hoyttalere||''), 4, y); y+=5;
-      doc.text('Kommentar:', 4, y); y+=4;
-      const block = doc.splitTextToSize(data.kommentar||'', 64); doc.text(block, 4, y); y+= (block.length*4)+4;
-      doc.text('Størrelse:', 4, y); y+=4;
-      (data.tariff||[]).forEach((t,i)=>{ doc.text((i+1)+'. '+t.type+': '+(t.kvm||'-')+' kvm'+(t.seter?(', '+t.seter+' seter'):'')+', '+(t.dager||'-')+' dager', 6, y); y+=4; });
-      y+=4; doc.text('Signert: ______________________', 4, y); y+=6;
-      doc.text('Kontrollør: __________________', 4, y); y+=8;
-      doc.text('TONO – Kongens gate 12, 0153 Oslo – www.tono.no', 4, y);
-      const blob=doc.output('blob'); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='kontroll-'+(data.orgnr||'')+'.pdf'; a.click();
+    // ====== PDF med logoer ======
+    async function imgToDataURL(src){
+      return new Promise((resolve,reject)=>{
+        const img=new Image(); img.crossOrigin='anonymous'; img.onload=()=>{
+          const c=document.createElement('canvas'); c.width=img.width; c.height=img.height;
+          const ctx=c.getContext('2d'); ctx.drawImage(img,0,0); resolve(c.toDataURL('image/png'));
+        }; img.onerror=reject; img.src=src;
+      });
+    }
+    async function generatePDF(data){
+      const { jsPDF } = window.jspdf||{}; if(!jsPDF){ alert('PDF-bibliotek mangler'); return; }
+      const doc=new jsPDF({ unit:'mm', format:'a4' });
+
+      // Logoer
+      try{
+        const tono=await imgToDataURL('tono_logo.png');
+        const gramo=await imgToDataURL('gramo_logo.png');
+        doc.addImage(tono,'PNG',15,12,28,10);
+        doc.addImage(gramo,'PNG',doc.internal.pageSize.getWidth()-43,12,28,10);
+      }catch{}
+
+      let y=28;
+      doc.setFontSize(14); doc.text('Kontrollskjema for bruk av musikk', 15, y); y+=8;
+      doc.setFontSize(11);
+
+      const lines=[
+        `Besøksnavn: ${data.navn||''}`,
+        `Besøksadresse: ${data.adresse||''}`,
+        `Post: ${data.postnr||''} ${data.poststed||''}`,
+      ];
+      lines.forEach(t=>{ doc.text(t,15,y); y+=6; });
+
+      // Dato/tid + kontrollør
+      const dt=new Date();
+      const userEmail = (supa.auth.getSession()).data?.session?.user?.email || '';
+      const metaName  = (supa.auth.getSession()).data?.session?.user?.user_metadata?.name || '';
+      const firstName = (metaName||userEmail).split('@')[0].split(/[.\s]/)[0] || '';
+      doc.text(`Kontrollert: ${dt.toLocaleDateString('nb-NO')} kl ${dt.toLocaleTimeString('nb-NO',{hour:'2-digit',minute:'2-digit'})}`, 15, y); y+=6;
+      doc.text(`Kontrollør: ${firstName}`, 15, y); y+=8;
+
+      doc.text('Tarifflinjer:', 15, y); y+=6;
+      (data.tariff||[]).forEach((t,i)=>{
+        const mus = t.type==='Fremtredende' ? 'Fremtredende musikk' : 'Bakgrunnsmusikk';
+        const arena = t.arena || 'Serveringssted';
+        const line = `${i+1}. ${mus} • ${arena} • ${t.kvm||'-'} kvm${t.seter?(' • '+t.seter+' seter'):''} • ${t.dager||'-'} dager/år`;
+        doc.text(line, 20, y); y+=6;
+      });
+      y+=2;
+
+      doc.text(`Høyttalere: ${data.hoyttalere||''}`,15,y); y+=6;
+      doc.text('Kommentar:',15,y); y+=6;
+      const block = doc.splitTextToSize(data.kommentar||'', 180); doc.text(block, 20, y); y += block.length*6 + 6;
+
+      // Footer
+      y+=6;
+      doc.text('TONO • GRAMO', 15, y); y+=6;
+      doc.text('TONO – Kongens gate 12, 0153 Oslo – www.tono.no', 15, y);
+
+      doc.save(`kontroll-${data.orgnr||''}.pdf`);
     }
     function printReceipt(){ generatePDF(getFormData()); }
 
-    // === Excel import ===
+    // ====== Import Excel + Lister (med zoom) ======
     async function importExcel(e){
       const file=e.target.files[0]; if(!file) return;
       try{
         const reader=new FileReader();
         reader.onload = async ev => {
           const data = new Uint8Array(ev.target.result);
-          const wb = XLSX.read(data, { type:'array' });
-          const ws = wb.Sheets[wb.SheetNames[0]];
-          const json = XLSX.utils.sheet_to_json(ws, { header:1, raw:false, defval:'' });
+          const wb = XLSX.read(data, { type: 'array' });
+          const sheet = wb.SheetNames[0];
+          const ws = wb.Sheets[sheet];
+          const json = XLSX.utils.sheet_to_json(ws,{ header:1, raw:false, defval:'' });
           const head = (json[0]||[]).map(s=>String(s||'').trim().toLowerCase());
-          const wanted = {
-            org:['orgnummer','org nr','organisasjonsnr','organisasjonsnummer','orgnr'],
-            navn:['navn','besøksnavn','bedriftsnavn','foretaksnavn'],
-            gate:['gateadresse','adresse','besøksadresse','adressse','gatenavn'],
-            postnr:['postnr','postnummer','post nr'],
-            poststed:['poststed','sted'],
-            kommentar:['kommentar','notat','note','merknad']
-          };
-          const idx={}; Object.keys(wanted).forEach(k=> idx[k]=head.findIndex(h=> wanted[k].some(w=> h===w)));
+          const wanted = { org:['orgnummer','org nr','organisasjonsnr','organisasjonsnummer','orgnr'], navn:['navn','besøksnavn','bedriftsnavn','foretaksnavn'], gate:['gateadresse','adresse','besøksadresse','adressse','gatenavn'], postnr:['postnr','postnummer','post nr'], poststed:['poststed','sted'], kommentar:['kommentar','notat','note','merknad'] };
+          const idx = {}; Object.keys(wanted).forEach(k=> idx[k]=head.findIndex(h=> wanted[k].some(w=> h===w)));
           const items=[];
           for(let r=1;r<json.length;r++){
-            const row=json[r]||[];
-            const get=(k)=>{ const i=idx[k]; if(i==null||i<0) return ''; return String(row[i]||'').trim(); };
+            const row=json[r]||[], get=(k)=>{const i=idx[k]; return i==null||i<0 ? '' : String(row[i]||'').trim()};
             const org = get('org').replace(/\s+/g,'').replace(/[^0-9]/g,'');
-            const itm = { Orgnummer: org, Navn: get('navn'), Gateadresse: get('gate'), Postnr: get('postnr'), Poststed: get('poststed'), Kommentar: get('kommentar'), color: 0 };
+            const itm = { Orgnummer: org, Navn:get('navn'), Gateadresse:get('gate'), Postnr:get('postnr'), Poststed:get('poststed'), Kommentar:get('kommentar'), color:0 };
             if(itm.Navn || itm.Gateadresse) items.push(itm);
           }
-          const name=(file.name||'Liste').replace(/\.(xlsx|xls)$/i,'');
+          const name = (file.name||'Liste').replace(/\.(xlsx|xls)$/i,'');
           await saveList(name, items);
         };
         reader.readAsArrayBuffer(file);
       }catch(err){ console.error(err); toast('Kunne ikke lese Excel'); }
     }
 
-    // === Lister dashboard ===
     async function renderDashboard(){
-      const lists = await fetchLists();
-      const host=$$('#lists-dashboard'); host.innerHTML='';
+      const lists=await fetchLists();
+      const d=$$('#lists-dashboard'); d.innerHTML='';
       const q = ($$('#search').value||'').toLowerCase();
-
       lists.forEach(L=>{
         const box=document.createElement('div'); box.className='card';
         box.innerHTML = `
           <div class="list-header">
-            <span>${sanitize(L.name)}</span>
+            <b>${sanitize(L.name)}</b>
             <small>${new Date(L.created_at).toLocaleDateString('nb-NO')}</small>
           </div>
-          <div class="help">${L.items.length} steder</div>
-          <div style="max-height:360px;overflow:auto;border:1px solid var(--br);border-radius:10px">
+          <div class="help" style="margin-bottom:6px">${L.items.length} steder</div>
+          <div style="max-height:420px;overflow:auto;border:1px solid var(--br);border-radius:10px">
             <table class="list-table">
-              <thead><tr>
-                <th>Orgnummer</th><th>Besøksnavn</th><th>Gateadresse</th><th>Post</th><th>Kommentar</th><th></th>
-              </tr></thead>
-              <tbody></tbody>
+              <thead><tr><th>Orgnummer</th><th>Besøksnavn</th><th>Gateadresse</th><th>Post</th><th>Kommentar</th><th></th></tr></thead>
+              <tbody id="tbody-${L.id}"></tbody>
             </table>
           </div>`;
-        host.appendChild(box);
-
-        const tbody=box.querySelector('tbody');
-
-        (L.items||[]).forEach((it, i)=>{
+        d.appendChild(box);
+        const tbody=$$('#tbody-'+L.id);
+        L.items.forEach((it,i)=>{
           const hay=[it.Orgnummer,it.Navn,it.Gateadresse,it.Postnr,it.Poststed,it.Kommentar].join(' ').toLowerCase();
           if(q && !hay.includes(q)) return;
-
           const tr=document.createElement('tr'); tr.className='list-row';
-
-          // Orgnummer
-          const tdOrg=document.createElement('td'); tdOrg.textContent=it.Orgnummer||''; tr.appendChild(tdOrg);
-
-          // Navn (klikkbar)
-          const tdNavn=document.createElement('td');
-          const btn=document.createElement('button'); btn.className='name-btn'; btn.textContent=it.Navn||'(uten navn)';
-          btn.addEventListener('click', async ()=>{
-            $$('#orgnr').value=it.Orgnummer||'';
-            $$('#navn').value=it.Navn||'';
-            $$('#besoksadresse').value=it.Gateadresse||'';
-            $$('#besoks_postnr').value=it.Postnr||'';
-            $$('#besoks_poststed').value=it.Poststed||'';
-            show('kontroll');
-            const n=(it.Orgnummer||'').replace(/\D/g,'');
-            if(n.length===9){
-              try{
-                const r=await fetch('https://data.brreg.no/enhetsregisteret/api/enheter/'+n);
-                if(r.ok){
-                  const d=await r.json();
-                  const a=d.forretningsadresse||d.beliggenhetsadresse||{};
-                  $$('#firma').value=d.navn||'';
-                  $$('#firma_postadresse').value=(a.adresse||a.adressebeskrivelse||a.gate||'')||'';
-                  $$('#firma_postnr').value=a.postnummer||'';
-                  $$('#firma_poststed').value=a.poststed||'';
-                }
-              }catch(e){ console.warn('Brreg lookup feilet', e); }
-            }
-          });
-          tdNavn.appendChild(btn); tr.appendChild(tdNavn);
-
-          // Gateadresse
-          const tdGate=document.createElement('td'); tdGate.textContent=it.Gateadresse||''; tr.appendChild(tdGate);
-
-          // Post
-          const tdPost=document.createElement('td'); tdPost.textContent=((it.Postnr||'')+' '+(it.Poststed||'')).trim(); tr.appendChild(tdPost);
-
-          // Kommentar (contenteditable -> lagre)
-          const tdK=document.createElement('td'); tdK.contentEditable='true'; tdK.textContent=it.Kommentar||''; 
-          tdK.addEventListener('blur', async ()=>{
-            try{
-              const { data:list } = await supa.from('lists').select('*').eq('id', L.id).single();
-              list.items[i].Kommentar = tdK.innerText;
-              await supa.from('lists').update({ items:list.items }).eq('id', L.id);
-            }catch(e){ console.error(e); }
-          });
-          tr.appendChild(tdK);
-
-          // Handlinger
-          const tdAct=document.createElement('td');
-          const del=document.createElement('button'); del.className='mini danger'; del.textContent='−';
-          del.title='Slett rad';
-          del.addEventListener('click', async ()=>{
-            try{
-              const { data:list } = await supa.from('lists').select('*').eq('id', L.id).single();
-              list.items.splice(i,1);
-              await supa.from('lists').update({ items:list.items }).eq('id', L.id);
-              renderDashboard();
-            }catch(e){ console.error(e); }
-          });
-          tdAct.appendChild(del);
-          tr.appendChild(tdAct);
-
+          tr.innerHTML = `
+            <td>${sanitize(it.Orgnummer||'')}</td>
+            <td>
+              <button style="all:unset;cursor:pointer;color:#111;font-weight:700"
+                onclick="(function(){
+                  document.getElementById('orgnr').value=${JSON.stringify(it.Orgnummer||'')};
+                  document.getElementById('navn').value=${JSON.stringify(it.Navn||'')};
+                  document.getElementById('besoksadresse').value=${JSON.stringify(it.Gateadresse||'')};
+                  document.getElementById('besoks_postnr').value=${JSON.stringify(it.Postnr||'')};
+                  document.getElementById('besoks_poststed').value=${JSON.stringify(it.Poststed||'')};
+                  show('kontroll');
+                })()"
+              >${sanitize(it.Navn||'')}</button>
+            </td>
+            <td>${sanitize(it.Gateadresse||'')}</td>
+            <td>${sanitize((it.Postnr||'')+' '+(it.Poststed||''))}</td>
+            <td contenteditable onblur="(async()=>{ try{ const { data:list } = await supa.from('lists').select('*').eq('id','${L.id}').single(); list.items[${i}].Kommentar=this.innerText; await supa.from('lists').update({ items:list.items }).eq('id','${L.id}'); }catch(e){ console.error(e) } })()">${sanitize(it.Kommentar||'Trykk for notat')}</td>
+            <td><button class="btn-gray" style="width:auto;padding:6px 10px" onclick="(async()=>{ if(!confirm('Slette raden?')) return; try{ const { data:list } = await supa.from('lists').select('*').eq('id','${L.id}').single(); list.items.splice(${i},1); await supa.from('lists').update({ items:list.items }).eq('id','${L.id}'); location.reload(); }catch(e){ console.error(e)} })()">Slett</button></td>
+          `;
           tbody.appendChild(tr);
         });
       });
     }
 
-    // === Arkiv ===
+    // ====== Kontrollert (eksport + slett) ======
+    function calcPoints(row){
+      // poeng per linje (TONO/GRAMO like)
+      // serveringssted 350, kundelokale 200, fremtredende 550
+      let tono=0, gramo=0;
+      for(const t of (row.data?.tariff||[])){
+        const isFrem = (t.type==='Fremtredende');
+        if(isFrem){ tono += 550; gramo += 550; }
+        else if(t.arena==='Kundelokale'){ tono += 200; gramo += 200; }
+        else { tono += 350; gramo += 350; }
+      }
+      return { tono, gramo };
+    }
+
     async function renderArchive(){
       const rows = await fetchControls();
-      const div=$$('#archive'); div.innerHTML='';
-      const byMonth={};
-      rows.forEach(c=>{
-        const key=new Date(c.created_at).toLocaleDateString('nb-NO',{year:'numeric',month:'long'});
-        (byMonth[key]=byMonth[key]||[]).push(c);
-      });
-      Object.keys(byMonth).sort().reverse().forEach(m=>{
-        const head=document.createElement('div'); head.className='card'; head.innerHTML='<b>'+sanitize(m)+'</b>'; div.appendChild(head);
-        byMonth[m].forEach(c=>{
-          const data=c.data||{};
-          const item=document.createElement('div'); item.className='card';
-          item.innerHTML='<b>'+sanitize(data.navn||'')+'</b> – '+new Date(c.created_at).toLocaleDateString('nb-NO')+'<br>'+
-            (data.tariff||[]).map(t=>sanitize((t.kvm||'')+' kvm • '+(t.seter||'')+' seter • '+(t.dager||'')+' dager • '+(t.type||''))).join('<br>');
-          div.appendChild(item);
+      const div = $$('#archive'); div.innerHTML='';
+      const byMonth = {};
+      rows.forEach(c=>{ const m=new Date(c.created_at).toLocaleDateString('nb-NO',{year:'numeric',month:'long'}); (byMonth[m]=byMonth[m]||[]).push(c); });
+
+      Object.keys(byMonth).sort().reverse().forEach(month=>{
+        const header=document.createElement('div'); header.className='card'; header.innerHTML='<b>'+sanitize(month)+'</b>'; div.appendChild(header);
+        byMonth[month].forEach(c=>{
+          const data=c.data||{}; const li=document.createElement('div'); li.className='card';
+          const pts = calcPoints(c);
+          li.innerHTML = `
+            <div class="row" style="align-items:center">
+              <div style="flex:1">
+                <b>${sanitize(data.navn||'')}</b> – ${new Date(c.created_at).toLocaleDateString('nb-NO')}<br>
+                ${(data.tariff||[]).map(t=>sanitize(`${t.kvm||''} kvm ${t.seter?('• '+t.seter+' seter • '):'• '}${t.dager||''} dager • ${t.type} • ${t.arena||''}`)).join('<br>')}
+                <div class="help">Poeng: TONO ${pts.tono} • GRAMO ${pts.gramo}</div>
+              </div>
+              <div style="width:120px;display:flex;gap:6px">
+                <button class="btn-gray" style="width:auto" onclick="(async()=>{ if(!confirm('Slette kontroll?')) return; await supa.from('controls').delete().eq('id','${c.id}'); location.reload(); })()">Slett</button>
+              </div>
+            </div>`;
+          div.appendChild(li);
         });
       });
     }
 
-    // === Events ===
-    $$$('nav button').forEach(b=> b.addEventListener('click', ()=>show(b.dataset.page)));
-    window.addEventListener('resize', applyNavPad, {passive:true});
-    window.addEventListener('orientationchange', applyNavPad, {passive:true});
-    applyNavPad();
+    async function exportMonth(){
+      const rows=await fetchControls();
+      const monthKey=new Date().toLocaleDateString('nb-NO',{year:'numeric',month:'long'});
+      const filt=rows.filter(r=> new Date(r.created_at).toLocaleDateString('nb-NO',{year:'numeric',month:'long'})===monthKey);
+      const out=[['Dato','Navn','Orgnr','Adresse','Post','Linje (musikk/arene/kvm/seter/dager)','TONO poeng','GRAMO poeng']];
+      filt.forEach(r=>{
+        const d=r.data||{};
+        const pts=calcPoints(r);
+        const linjer=(d.tariff||[]).map(t=> `${t.type}/${t.arena}/${t.kvm||''}/${t.seter||''}/${t.dager||''}`).join(' | ');
+        out.push([ new Date(r.created_at).toLocaleDateString('nb-NO'), d.navn||'', d.orgnr||'', (d.adresse||''), `${d.postnr||''} ${d.poststed||''}`, linjer, pts.tono, pts.gramo ]);
+      });
+      const ws=XLSX.utils.aoa_to_sheet(out), wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Eksport');
+      XLSX.writeFile(wb, `kontrollert-${monthKey}.xlsx`);
+    }
 
-    $$('#brregBtn').addEventListener('click', searchBrreg);
+    // ====== Events ======
+    $$$('nav button').forEach(b=> b.addEventListener('click', ()=> show(b.dataset.page)));
+    $$('#brregBtn').addEventListener('click', ()=>searchBrreg());
     $$('#orgnr').addEventListener('input', ()=>{ const n=$$('#orgnr').value.replace(/\D/g,''); if(n.length===9) searchBrregDebounced(); });
-    $$('#type').addEventListener('change', updateTariffDefault);
-    $$('#addRowBtn').addEventListener('click', ()=>addRow());
+
+    $$('#addRowBtn').addEventListener('click', ()=> addRow({}));
     $$('#resetBtn').addEventListener('click', resetForm);
-    $$('#saveDraftBtn').addEventListener('click', ()=>saveControl('draft'));
-    $$('#sendBtn').addEventListener('click', ()=>saveControl('sent'));
+    $$('#saveDraftBtn').addEventListener('click', ()=> saveControl('draft'));
+    $$('#sendBtn').addEventListener('click', ()=> saveControl('sent'));
     $$('#printBtn').addEventListener('click', printReceipt);
     $$('#excelFile').addEventListener('change', importExcel);
     $$('#logoutBtn').addEventListener('click', signOut);
+
     $$('#search').addEventListener('input', debounce(renderDashboard, 200));
+    $$('#exportMonthBtn').addEventListener('click', exportMonth);
+    $$('#refreshArchiveBtn').addEventListener('click', renderArchive);
+
+    // Zoom i lister
+    function setZoom(v){ document.documentElement.style.setProperty('--list-zoom', String(v)); }
+    let zoom=1;
+    $$('#zoomIn').addEventListener('click', ()=>{ zoom=Math.min(zoom+0.1,1.6); setZoom(zoom); });
+    $$('#zoomOut').addEventListener('click', ()=>{ zoom=Math.max(zoom-0.1,0.7); setZoom(zoom); });
+    $$('#zoomReset').addEventListener('click', ()=>{ zoom=1; setZoom(zoom); });
+
+    // Auth
+    function showAuthError(err){ const el=$$('#auth-error'); el.style.display='block'; el.textContent=err?.message||'Ukjent feil'; }
+    function clearAuthError(){ const el=$$('#auth-error'); el.style.display='none'; el.textContent=''; }
+    async function loginEmailPass(email,password){ const {error}=await supa.auth.signInWithPassword({email,password}); if(error) throw error; }
+    async function signupEmailPass(email,password){ const {error}=await supa.auth.signUp({email,password}); if(error) throw error; }
+    async function magicLink(email){ const {error}=await supa.auth.signInWithOtp({email}); if(error) throw error; }
 
     $$('#loginBtn').addEventListener('click', async ()=>{
-      clearAuthError(); setAuthBusy(true); setAuthStatus('Logger inn…');
-      try{
-        await loginEmailPass(($$('#email').value||'').trim(), ($$('#password').value||'').trim());
-        setAuthStatus('Innlogget ✔'); toast('Innlogget'); show('kontroll');
-        renderDashboard(); renderArchive(); updateTariffDefault();
-      }catch(err){
-        console.error(err);
-        const msg = err?.message || String(err); showAuthError(msg);
-        setAuthStatus(msg.includes('Email not confirmed') ? 'E-post ikke bekreftet i Supabase.' : 'Innlogging feilet.');
-      }finally{ setAuthBusy(false); }
+      clearAuthError();
+      try{ await loginEmailPass($$('#email').value, $$('#password').value); toast('Innlogget'); }
+      catch(e){ showAuthError(e); }
     });
     $$('#signupBtn').addEventListener('click', async ()=>{
-      clearAuthError(); setAuthBusy(true); setAuthStatus('Oppretter bruker…');
-      try{ await signupEmailPass(($$('#email').value||'').trim(), ($$('#password').value||'').trim()); setAuthStatus('Bruker opprettet. Sjekk ev. e-postbekreftelse.'); toast('Bruker opprettet'); }
-      catch(err){ showAuthError(err?.message||String(err)); }
-      finally{ setAuthBusy(false); }
+      clearAuthError();
+      try{ await signupEmailPass($$('#email').value, $$('#password').value); toast('Bruker opprettet'); }
+      catch(e){ showAuthError(e); }
     });
     $$('#magicBtn').addEventListener('click', async ()=>{
-      clearAuthError(); setAuthBusy(true); setAuthStatus('Sender magisk lenke…');
-      try{ await magicLink(($$('#email').value||'').trim()); setAuthStatus('Magisk lenke sendt.'); toast('Sjekk e-posten'); }
-      catch(err){ showAuthError(err?.message||String(err)); }
-      finally{ setAuthBusy(false); }
+      clearAuthError();
+      try{ await magicLink($$('#email').value); toast('Sjekk e-post for magisk lenke'); }
+      catch(e){ showAuthError(e); }
     });
-    ['#email','#password'].forEach(sel=> $$(sel).addEventListener('keydown', (ev)=>{ if(ev.key==='Enter') $$('#loginBtn').click(); }));
 
-    supa.auth.onAuthStateChange((_e, session)=>{ if(session?.user){ show('kontroll'); renderDashboard(); renderArchive(); updateTariffDefault(); } else { show('login'); } });
+    supa.auth.onAuthStateChange((_e, session)=>{ if(session?.user){ show('kontroll'); renderDashboard(); renderArchive(); updateTariffDefault(); } else { show('login'); }});
     (async function init(){
       const { data:{ session } } = await supa.auth.getSession();
-      if(session?.user){ show('kontroll'); renderDashboard(); renderArchive(); updateTariffDefault(); }
-      else { show('login'); updateTariffDefault(); }
+      if(session?.user){ show('kontroll'); renderDashboard(); renderArchive(); updateTariffDefault(); } else { show('login'); updateTariffDefault(); }
     })();
   })();
   </script>
