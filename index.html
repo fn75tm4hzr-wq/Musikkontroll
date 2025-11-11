@@ -530,7 +530,8 @@
   $$('#addRowBtn').addEventListener('click', ()=>addRow());
   $$('#resetBtn').addEventListener('click', resetForm);
   $$('#saveDraftBtn').addEventListener('click', ()=>saveControl('draft'));
-  $$('#sendBtn').addEventListener('click', ()=>saveControl('sent'));
+  $$('#sendBtn').addEventListener('click', ()=>{
+  const data = getFormData();
   $$('#printBtn').addEventListener('click', printReceipt);
   $$('#excelFile').addEventListener('change', importExcel);
   $$('#logoutBtn').addEventListener('click', signOut);
