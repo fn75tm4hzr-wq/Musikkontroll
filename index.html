@@ -165,7 +165,7 @@
 
   <script>
     // ===== helpers
-    const $$ = s => document.querySelector(s)
+    const $$  = s => document.querySelector(s)
     const $$$ = s => Array.from(document.querySelectorAll(s))
     const toast = (m)=>{ const t=$$('#toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1600) }
     const sanitize = (str='') => String(str).replace(/[<>]/g, c => ({'<':'&lt;','>':'&gt;'}[c]))
@@ -218,7 +218,7 @@
       }catch{ brregLog.textContent='Ikke funnet' }
     }
 
-    // ===== TARIFFLINJER (per rad)
+    // ===== TARIFFLINJER
     function defaultDays(venue, music){
       if(music==='Fremtredende') return 104
       return venue==='Serveringssted' ? 356 : 310
@@ -320,6 +320,23 @@
       return data
     }
 
+    async function deleteControl(controlId){
+      if(!confirm('Slette denne kontrollen?')) return;
+      try{
+        const { error } = await supabase.from('controls').delete().eq('id', controlId);
+        if(error){
+          console.error(error);
+          toast('Kunne ikke slette kontroll');
+          return;
+        }
+        toast('Kontroll slettet');
+        await renderArchive();
+      }catch(e){
+        console.error(e);
+        toast('Kunne ikke slette kontroll');
+      }
+    }
+
     async function saveList(name, items){
       const user = await currentUser(); if(!user){ toast('Innlogging kreves'); return }
       const { error } = await supabase.from('lists').insert({ user_id:user.id, name, items })
@@ -330,6 +347,27 @@
       const { data, error } = await supabase.from('lists').select('*').order('created_at',{ ascending:false })
       if(error){ console.error(error); return [] }
       return data
+    }
+
+    async function deleteList(listId){
+      if(!confirm('Slette hele listen?')) return;
+      try{
+        const { error } = await supabase
+          .from('lists')
+          .delete()
+          .eq('id', listId);
+
+        if(error){
+          console.error(error);
+          toast('Kunne ikke slette liste');
+          return;
+        }
+        toast('Liste slettet');
+        await renderDashboard();
+      }catch(e){
+        console.error(e);
+        toast('Kunne ikke slette liste');
+      }
     }
 
     // ===== PDF & Print
@@ -348,7 +386,7 @@
       L.forEach(t=>{ doc.text(t,4,y); y+=5 })
 
       y+=2; doc.text('Linjer:',4,y); y+=5
-      data.tariff.forEach((t,i)=>{
+      ;(data.tariff||[]).forEach((t,i)=>{
         const sit = (t.venue==='Serveringssted' && t.seter) ? ` • ${t.seter} seter` : ''
         const mus = t.music==='Bakgrunn' ? 'Bakgrunnsmusikk' : 'Fremtredende musikk'
         doc.text(`${i+1}. ${t.venue} • ${mus} • ${t.kvm} kvm${sit} • ${t.dager} dager/år`, 6, y)
@@ -413,14 +451,20 @@
 
     async function renderDashboard(){
       const lists = await fetchLists()
-      const d=$$('#lists-dashboard'); d.innerHTML=''
+      const container = $$('#lists-dashboard')
+      container.innerHTML = ''
       const q = ($$('#search').value||'').toLowerCase()
+
       lists.forEach(L=>{
-        const box=document.createElement('div'); box.className='card'
-        box.innerHTML=`
+        const box = document.createElement('div')
+        box.className = 'card'
+        box.innerHTML = `
           <div class="list-header">
             <span style="cursor:default">${sanitize(L.name)}</span>
-            <small>${new Date(L.created_at).toLocaleDateString('nb-NO')}</small>
+            <div style="display:flex;gap:8px;align-items:center">
+              <small>${new Date(L.created_at).toLocaleDateString('nb-NO')}</small>
+              <button class="btn-tiny" type="button" data-role="delete-list">Slett liste</button>
+            </div>
           </div>
           <div class="list-scroll">
             <table class="list-table">
@@ -434,51 +478,89 @@
                   <th style="width:80px"></th>
                 </tr>
               </thead>
-              <tbody id="tbody-${L.id}"></tbody>
+              <tbody></tbody>
             </table>
           </div>`
-        d.appendChild(box)
-        const tbody=$$('#tbody-'+L.id)
+        container.appendChild(box)
+
+        const deleteBtn = box.querySelector('button[data-role="delete-list"]')
+        if(deleteBtn) deleteBtn.addEventListener('click', ()=>deleteList(L.id))
+
+        const tbody = box.querySelector('tbody')
+
         L.items.forEach((it,i)=>{
           const hay=[it.Orgnummer,it.Navn,it.Gateadresse,it.Postnr,it.Poststed,it.Kommentar].join(' ').toLowerCase()
           if(q && !hay.includes(q)) return
-          const tr=document.createElement('tr'); tr.className='list-row'
-          tr.innerHTML=`
-            <td>${sanitize(it.Orgnummer||'')}</td>
-            <td>
-              <button class="btn-tiny" title="Åpne i skjema" onclick='(function(){
-                document.getElementById("orgnr").value=${JSON.stringify(it.Orgnummer||'')};
-                document.getElementById("navn").value=${JSON.stringify(it.Navn||'')};
-                document.getElementById("besoksadresse").value=${JSON.stringify(it.Gateadresse||'')};
-                document.getElementById("besoks_postnr").value=${JSON.stringify(it.Postnr||'')};
-                document.getElementById("besoks_poststed").value=${JSON.stringify(it.Poststed||'')};
-                show("kontroll");
-                (async()=>{ const n="${sanitize(it.Orgnummer||'')}".replace(/\\D/g,''); if(n.length===9){
-                  try{ const r=await fetch("https://data.brreg.no/enhetsregisteret/api/enheter/"+n);
-                    if(r.ok){ const d=await r.json(); const a=d.forretningsadresse||d.beliggenhetsadresse||{};
-                      document.getElementById("besoks_postnr").value=a.postnummer||'';
-                      document.getElementById("besoks_poststed").value=a.poststed||'';
-                      document.getElementById("firma").value=d.navn||'';
-                    }
-                  }catch(e){}
-                }})();
-              })()'>${sanitize(it.Navn||'Åpne')}</button>
-            </td>
-            <td>${sanitize(it.Gateadresse||'')}</td>
-            <td>${sanitize((it.Postnr||'')+' '+(it.Poststed||''))}</td>
-            <td contenteditable onblur="(async()=>{ try{
-              const { data:list } = await supabase.from('lists').select('*').eq('id','${L.id}').single();
-              list.items[${i}].Kommentar=this.innerText;
-              await supabase.from('lists').update({ items:list.items }).eq('id','${L.id}');
-            }catch(e){ console.error(e) } })()">${sanitize(it.Kommentar||'')}</td>
-            <td class="action-btns">
-              <button class="btn-tiny" title="Slett rad" onclick="(async()=>{ try{
-                const { data:list } = await supabase.from('lists').select('*').eq('id','${L.id}').single();
-                list.items.splice(${i},1);
-                await supabase.from('lists').update({ items:list.items }).eq('id','${L.id}');
-                await renderDashboard();
-              }catch(e){ console.error(e) } })()">🗑</button>
-            </td>`
+
+          const tr = document.createElement('tr')
+          tr.className = 'list-row'
+
+          const tdOrgnr = document.createElement('td')
+          tdOrgnr.textContent = it.Orgnummer || ''
+
+          const tdNavn = document.createElement('td')
+          const openBtn = document.createElement('button')
+          openBtn.className = 'btn-tiny'
+          openBtn.type = 'button'
+          openBtn.title = 'Åpne i skjema'
+          openBtn.textContent = it.Navn || 'Åpne'
+          openBtn.addEventListener('click', ()=>{
+            $$('#orgnr').value = it.Orgnummer || ''
+            $$('#navn').value = it.Navn || ''
+            $$('#besoksadresse').value = it.Gateadresse || ''
+            $$('#besoks_postnr').value = it.Postnr || ''
+            $$('#besoks_poststed').value = it.Poststed || ''
+            show('kontroll')
+            const n = String(it.Orgnummer||'').replace(/\D/g,'')
+            if(n.length===9) searchBrreg()
+          })
+          tdNavn.appendChild(openBtn)
+
+          const tdGate = document.createElement('td')
+          tdGate.textContent = it.Gateadresse || ''
+
+          const tdPost = document.createElement('td')
+          tdPost.textContent = ((it.Postnr||'')+' '+(it.Poststed||'')).trim()
+
+          const tdKommentar = document.createElement('td')
+          tdKommentar.contentEditable = 'true'
+          tdKommentar.textContent = it.Kommentar || ''
+          tdKommentar.addEventListener('blur', async ()=>{
+            try{
+              const { data:list, error } = await supabase.from('lists').select('*').eq('id', L.id).single()
+              if(error){ console.error(error); return }
+              list.items[i].Kommentar = tdKommentar.innerText
+              const { error:updateError } = await supabase.from('lists').update({ items:list.items }).eq('id', L.id)
+              if(updateError) console.error(updateError)
+            }catch(e){ console.error(e) }
+          })
+
+          const tdActions = document.createElement('td')
+          tdActions.className = 'action-btns'
+          const delBtn = document.createElement('button')
+          delBtn.className = 'btn-tiny'
+          delBtn.type = 'button'
+          delBtn.title = 'Slett rad'
+          delBtn.textContent = '🗑'
+          delBtn.addEventListener('click', async ()=>{
+            try{
+              const { data:list, error } = await supabase.from('lists').select('*').eq('id', L.id).single()
+              if(error){ console.error(error); toast('Kunne ikke hente liste'); return }
+              list.items.splice(i,1)
+              const { error:updateError } = await supabase.from('lists').update({ items:list.items }).eq('id', L.id)
+              if(updateError){ console.error(updateError); toast('Kunne ikke oppdatere liste'); return }
+              await renderDashboard()
+            }catch(e){ console.error(e); toast('Kunne ikke slette rad') }
+          })
+          tdActions.appendChild(delBtn)
+
+          tr.appendChild(tdOrgnr)
+          tr.appendChild(tdNavn)
+          tr.appendChild(tdGate)
+          tr.appendChild(tdPost)
+          tr.appendChild(tdKommentar)
+          tr.appendChild(tdActions)
+
           tbody.appendChild(tr)
         })
       })
@@ -487,26 +569,46 @@
     async function renderArchive(){
       const rows = await fetchControls()
       const div=$$('#archive'); div.innerHTML=''
+
+      if(!rows.length){
+        const p=document.createElement('p')
+        p.textContent='Ingen kontroller registrert ennå.'
+        div.appendChild(p)
+        return
+      }
+
       const byMonth = {}
-      rows.forEach(c=>{ const m=new Date(c.created_at).toLocaleDateString('nb-NO',{year:'numeric',month:'long'}); (byMonth[m]=byMonth[m]||[]).push(c) })
+      rows.forEach(c=>{
+        const m=new Date(c.created_at).toLocaleDateString('nb-NO',{year:'numeric',month:'long'})
+        ;(byMonth[m]=byMonth[m]||[]).push(c)
+      })
+
       Object.keys(byMonth).sort().reverse().forEach(month=>{
         const el=document.createElement('div'); el.className='month-header'; el.textContent=month; div.appendChild(el)
         byMonth[month].forEach(c=>{
           const data=c.data||{}
           const li=document.createElement('div'); li.className='archive-item'
-          li.innerHTML=`<b>${sanitize(data.navn||'')}</b> – ${new Date(c.created_at).toLocaleDateString('nb-NO')}<br>
-            ${(data.tariff||[]).map(t=>{
-              const sit = (t.venue==='Serveringssted' && t.seter)?` • ${sanitize(t.seter)} seter`:''
-              const mus = t.music==='Bakgrunn'?'Bakgrunnsmusikk':'Fremtredende musikk'
-              return `${sanitize(t.venue)} • ${mus} • ${sanitize(t.kvm)} kvm${sit} • ${sanitize(t.dager)} dager`
-            }).join('<br>')}`
+          const lines = (data.tariff||[]).map(t=>{
+            const sit = (t.venue==='Serveringssted' && t.seter)?` • ${sanitize(t.seter)} seter`:'';
+            const mus = t.music==='Bakgrunn'?'Bakgrunnsmusikk':'Fremtredende musikk';
+            return `${sanitize(t.venue)} • ${mus} • ${sanitize(t.kvm)} kvm${sit} • ${sanitize(t.dager)} dager`;
+          }).join('<br>')
+
+          li.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <span><b>${sanitize(data.navn||'')}</b> – ${new Date(c.created_at).toLocaleDateString('nb-NO')}</span>
+              <button class="btn-tiny" type="button">Slett</button>
+            </div>
+            ${lines}
+          `
+          const delBtn = li.querySelector('button')
+          delBtn.addEventListener('click', ()=>deleteControl(c.id))
           div.appendChild(li)
         })
       })
     }
 
     // ===== events
-    // auth ui
     $$('#loginBtn').addEventListener('click', async ()=>{
       clearAuthError()
       try{ const { error } = await supabase.auth.signInWithPassword({ email: $$('#email').value, password: $$('#password').value }); if(error) throw error }
@@ -523,36 +625,33 @@
       catch(e){ showAuthError(e); toast('Kunne ikke sende lenke') }
     })
 
-    // nav
     $$$('nav button').forEach(b=> b.addEventListener('click', ()=>{ show(b.dataset.page) }))
 
-    // brreg & form
     $$('#brregBtn').addEventListener('click', ()=>searchBrreg())
     $$('#orgnr').addEventListener('input', ()=>{ const n=$$('#orgnr').value.replace(/\D/g,''); if(n.length===9) searchBrreg() })
     $$('#addRowBtn').addEventListener('click', ()=>addRow())
     $$('#resetBtn').addEventListener('click', resetForm)
     $$('#saveDraftBtn').addEventListener('click', ()=>saveControl('draft'))
     $$('#printBtn').addEventListener('click', printReceipt)
-
-    // Send PDF: last ned STRAKS (doc.save), lagre i bakgrunnen
     $$('#sendBtn').addEventListener('click', ()=>{
       const payload = getFormData()
-      generatePDF(payload)        // nedlasting/visning med en gang
-      saveControl('sent').catch(console.error) // ikke blokker nedlasting
+      generatePDF(payload)
+      saveControl('sent').catch(console.error)
     })
 
-    // lister
     $$('#excelFile').addEventListener('change', importExcel)
     $$('#logoutBtn').addEventListener('click', async ()=>{ await supabase.auth.signOut(); show('login'); toast('Logget ut') })
     $$('#search').addEventListener('input', ()=>renderDashboard())
 
-    // auth routing
-    supabase.auth.onAuthStateChange((_e, session)=>{ if(session?.user){ show('kontroll'); updateTariffDefault(); renderDashboard(); renderArchive() } else { show('login'); updateTariffDefault() } })
+    supabase.auth.onAuthStateChange((_e, session)=>{
+      if(session?.user){ show('kontroll'); updateTariffDefault(); renderDashboard(); renderArchive() }
+      else { show('login'); updateTariffDefault() }
+    })
 
-    // init
     (async function init(){
       const { data:{ session } } = await supabase.auth.getSession()
-      if(session?.user){ show('kontroll'); updateTariffDefault(); renderDashboard(); renderArchive() } else { show('login'); updateTariffDefault() }
+      if(session?.user){ show('kontroll'); updateTariffDefault(); renderDashboard(); renderArchive() }
+      else { show('login'); updateTariffDefault() }
     })()
   </script>
 </body>
